@@ -7,11 +7,13 @@ interface Props {
   agents: Agent[];
   progress: number;
   pendingCount: number;
+  working: number;
+  requesting: boolean;
   onSelect: (a: Agent) => void;
   onRequestReport: (deptId: string) => void;
 }
 
-export function Room({ dept, agents, progress, pendingCount, onSelect, onRequestReport }: Props) {
+export function Room({ dept, agents, progress, pendingCount, working, requesting, onSelect, onRequestReport }: Props) {
   const integration = PENDING_INTEGRATIONS[dept.id];
 
   return (
@@ -40,6 +42,7 @@ export function Room({ dept, agents, progress, pendingCount, onSelect, onRequest
         ))}
         <span className="plant" />
         {pendingCount > 0 && <span className="room-mail">📨 {pendingCount}</span>}
+        {working > 0 && <span className="room-working">⚙️ AI 작업 중 {working}</span>}
 
         {agents.map((a) => (
           <button
@@ -79,8 +82,8 @@ export function Room({ dept, agents, progress, pendingCount, onSelect, onRequest
           ) : (
             <span className="badge ok">● 가동 중</span>
           )}
-          <button className="link-btn" onClick={() => onRequestReport(dept.id)}>
-            보고 요청
+          <button className="link-btn" disabled={requesting} onClick={() => onRequestReport(dept.id)}>
+            {requesting ? "제안 받는 중…" : "보고 요청"}
           </button>
         </div>
       </footer>

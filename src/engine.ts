@@ -100,6 +100,8 @@ export class Simulation {
   log: LogEntry[] = [];
   paused = false;
   speed = 1;
+  /** false 면 가짜 결재를 만들지 않음 (실제 AI 연동 모드) */
+  autoReports = true;
   version = 0;
 
   private listeners = new Set<() => void>();
@@ -231,8 +233,8 @@ export class Simulation {
       this.progress[d.id] += seated * PROGRESS_PER_SEATED * factor;
       if (this.progress[d.id] >= 100) {
         this.progress[d.id] = 0;
-        this.submit(d, "최종 결과");
-      } else if (Math.random() < 0.0004) {
+        if (this.autoReports) this.submit(d, "최종 결과");
+      } else if (this.autoReports && Math.random() < 0.0004) {
         this.submit(d, pick(REPORT_KINDS));
       }
     }
@@ -296,6 +298,22 @@ export class Simulation {
   requestReport(deptId: string) {
     const d = DEPARTMENTS.find((x) => x.id === deptId);
     if (d) this.submit(d, "긴급 보고");
+    this.emit();
+  }
+
+  /** 팀장이 말풍선으로 소식을 알리고 사무실 소식에 기록 */
+  announce(deptId: string, bubble: string, log?: string) {
+    const lead =
+      this.agents.find((a) => a.dept === deptId && a.staff.rank === "lead") ??
+      this.agents.find((a) => a.dept === deptId);
+    if (lead) this.say(lead, bubble, 6000);
+    if (log) this.pushLog(log);
+    this.emit();
+  }
+
+  setLive(live: boolean) {
+    this.autoReports = !live;
+    if (live) this.pushLog("🔌 실제 AI 연동 모드로 전환됐어요.");
     this.emit();
   }
 

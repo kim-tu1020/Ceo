@@ -1,0 +1,5 @@
+{
+  "functions": {
+    "api/tasks.ts": { "maxDuration": 300 }
+  }
+}
